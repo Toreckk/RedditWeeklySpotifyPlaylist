@@ -91,6 +91,7 @@ def usr_auth():
 
         with open('config.json', 'w') as f:
             json.dump(tokens, f, indent=4)
+        refresh_credentials()
     else:#We have refresh token -> We use it to obtain a new access token
         refresh_credentials()
           
@@ -109,6 +110,8 @@ def refresh_credentials():
         resp = json.loads(post_request.text)
         access_token = resp['access_token']
         tokens['SPOTIFY_ACCESS_TOKEN'] = access_token
+        with open('config.json', 'w') as f:
+            json.dump(tokens, f, indent=4)
     else:
         print("Failed to refresh credentials with error code {}".format(post_request.status_code))
 
@@ -146,11 +149,12 @@ def searchSong(songTitle):
     }
     song = requests.get(search_url, headers = headers, allow_redirects=False, timeout=None)
     resp = json.loads(song.text)
-
+    #print(resp)
     if len(resp['tracks']['items'])>0:
         print("Track ID: "+resp['tracks']['items'][0]['id'])
     else:
         print("Song not found")
+    
     
     
 
