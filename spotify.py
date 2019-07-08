@@ -50,7 +50,6 @@ def req_auth_app():
     print('-------------------------------------')
     parsed = urllib.parse.urlparse(var)
     code = urllib.parse.parse_qs(parsed.query)['code'][0]
-    print(code)
     print('-------------------------------------')
     return code
 
@@ -70,7 +69,7 @@ def usr_auth():
 
         auth_str = bytes('{}:{}'.format(CLIENT_ID, CLIENT_SECRET), 'utf-8')
         b64_auth_str = base64.b64encode(auth_str).decode('utf-8')
-        print(b64_auth_str)
+
         headers = {
             "Authorization": "Basic {}".format(b64_auth_str),
             'Content-Type': 'application/x-www-form-urlencoded'
@@ -81,19 +80,13 @@ def usr_auth():
         resp = json.loads(post_request.text)
 
         access_token = resp['access_token']
-        token_type = resp['token_type']
         refresh_token = resp['refresh_token']
-        expires_in = resp['expires_in']
 
-        json_data = {
-            "SPOTIFY_CLIENT_ID":     CLIENT_ID,
-            "SPOTIFY_CLIENT_SECRET":  CLIENT_SECRET,
-            "SPOTIFY_ACCESS_TOKEN" : access_token,
-            "SPOTIFY_REFRESH_TOKEN" : refresh_token
-        }
+        tokens['SPOTIFY_ACCESS_TOKEN'] = access_token
+        tokens['SPOTIFY_REFRESH_TOKEN'] = refresh_token
 
         with open('config.json', 'w') as f:
-            f.write(json.dumps(json_data))
+            json.dump(tokens, f, indent=4)
 
         
 
