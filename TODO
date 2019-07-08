@@ -1,0 +1,9 @@
+1) DONE - Complete Spotify authentication
+2) Use PRAW to obtain top 50 songs
+3) Search track URIs of each song
+add them to a list
+4) Replace tracks in playlist
+5) Create additional script to
+create new playlist to get the ID
+6) add try/catch blocks to API calls
+7) Restructure
