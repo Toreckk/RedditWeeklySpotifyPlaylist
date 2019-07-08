@@ -67,7 +67,7 @@ def req_auth_app():
 # If there is no refresh token we obtain a new refresh token and access token
 # Else we refresh the access token with the refresh token
 def usr_auth():
-    if(len(SPOTIFY_REFRESH_TOKEN)<1): # If no previous token exists we obtain 
+    if(len(tokens['SPOTIFY_REFRESH_TOKEN'])<1): # If no previous token exists we obtain 
 
         auth_code = req_auth_app()
 
@@ -82,7 +82,7 @@ def usr_auth():
         post_request = requests.post(URL_TOKEN, data=payload, headers=getSpotifyAuthHeader(), allow_redirects=False, timeout=None)
 
         resp = json.loads(post_request.text)
-
+        print(resp)
         access_token = resp['access_token']
         refresh_token = resp['refresh_token']
 
@@ -91,15 +91,16 @@ def usr_auth():
 
         with open('config.json', 'w') as f:
             json.dump(tokens, f, indent=4)
-        refresh_credentials()
+        #refresh_credentials()
     else:#We have refresh token -> We use it to obtain a new access token
         refresh_credentials()
           
 def refresh_credentials():
     print("Refreshing credentials...")
+    print("REFRESH TOKEN: "+ tokens['SPOTIFY_REFRESH_TOKEN'])
     payload = {
             "grant_type": "refresh_token",
-            "refresh_token": SPOTIFY_REFRESH_TOKEN
+            "refresh_token": tokens['SPOTIFY_REFRESH_TOKEN']
         }
 
     post_request = requests.post(URL_TOKEN, data = payload, headers = getSpotifyAuthHeader(), allow_redirects=False, timeout=None)
@@ -143,17 +144,19 @@ def searchSong(songTitle):
     
     search_url = "{}?q={}&type=track&limit=1".format(url,query_params['q'])
     headers = {
-        "Authorization": "Bearer {}".format(SPOTIFY_ACCESS_TOKEN),
+        "Authorization": "Bearer {}".format(tokens['SPOTIFY_ACCESS_TOKEN']),
         "Content-Type": "application/json",
         "Accept": "application/json"
     }
     song = requests.get(search_url, headers = headers, allow_redirects=False, timeout=None)
     resp = json.loads(song.text)
     #print(resp)
+    
     if len(resp['tracks']['items'])>0:
         print("Track ID: "+resp['tracks']['items'][0]['id'])
     else:
         print("Song not found")
+    
     
     
     
