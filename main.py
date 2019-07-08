@@ -9,14 +9,6 @@ import re
 with open('./config.json') as f:
     tokens = json.loads(f.read())
 
-SPOTIFY_CLIENT_ID = tokens['SPOTIFY_CLIENT_ID']
-SPOTIFY_CLIENT_SECRET = tokens['SPOTIFY_CLIENT_SECRET']
-SPOTIFY_ACCESS_TOKEN = tokens['SPOTIFY_ACCESS_TOKEN']
-SPOTIFY_REFRESH_TOKEN = tokens['SPOTIFY_REFRESH_TOKEN']
-REDDIT_CLIENT_ID = tokens['REDDIT_CLIENT_ID']
-REDDIT_CLIENT_SECRET = tokens['REDDIT_CLIENT_SECRET']
-REDDIT_USER_AGENT = tokens['REDDIT_USER_AGENT']
-
 #Spotify Base URLs
 URL_AUTH = "https://accounts.spotify.com/authorize"
 URL_TOKEN = "https://accounts.spotify.com/api/token"
@@ -29,7 +21,7 @@ SHOW_DIALOG = str(False).lower()
 
 #Authorization header for Spotify API requests
 def getSpotifyAuthHeader():
-    auth_str = bytes('{}:{}'.format(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET), 'utf-8')
+    auth_str = bytes('{}:{}'.format(tokens['SPOTIFY_CLIENT_ID'], tokens['SPOTIFY_CLIENT_SECRET']), 'utf-8')
     b64_auth_str = base64.b64encode(auth_str).decode('utf-8')
 
     headers = {
@@ -43,7 +35,7 @@ def getSpotifyAuthHeader():
 # if the config.json doesn't have it
 def req_auth_app():
     auth_params = {
-        "client_id" : SPOTIFY_CLIENT_ID,
+        "client_id" : tokens['SPOTIFY_CLIENT_ID'],
         "response_type": "code",
         "redirect_uri": REDIRECT_URI,
         #"state":STATE, #OPTIONAL
@@ -91,7 +83,6 @@ def usr_auth():
 
         with open('config.json', 'w') as f:
             json.dump(tokens, f, indent=4)
-        #refresh_credentials()
     else:#We have refresh token -> We use it to obtain a new access token
         refresh_credentials()
           
@@ -127,11 +118,28 @@ def getSongURIs(r):
     #   Artist -- Title [Genre](Year)
     #   Artist - Title [Genre](Year)
     # We'll remove everyting from [
-    for submission in r.subreddit('listentothis').top(time_filter='week', limit=10):
+    i = 1
+    for submission in r.subreddit('listentothis').top(time_filter='week', limit=100):
         title = re.split(r"^([^:(]+?)(\s*[\[\(])", submission.title)
-        print(title[1])
-        searchSong(title[1])
-        print("-------")
+        #print(title[1])
+        try: 
+            songID = searchSong(title[1])
+            print("{}. {} ID: {}".format(i, title[1], songID))
+            SongIDs.append(songID)
+            i+=1
+        except IndexError:
+            pass
+        except:
+            print("No song found with title {}".format(title[1]))
+        if len(SongIDs)>=50:
+            print("----------------")
+            print("50 songs reached")
+            print("----------------")
+            break
+        
+
+
+        
 
 def searchSong(songTitle):
     url = "https://api.spotify.com/v1/search"
@@ -153,9 +161,11 @@ def searchSong(songTitle):
     #print(resp)
     
     if len(resp['tracks']['items'])>0:
-        print("Track ID: "+resp['tracks']['items'][0]['id'])
+        #print("Track ID: "+ resp['tracks']['items'][0]['id'])
+        return resp['tracks']['items'][0]['id']
     else:
-        print("Song not found")
+        #print("Song not found")
+        raise Exception('No song found with that title')
     
     
     
@@ -169,9 +179,9 @@ def main():
     usr_auth()
 
     #Initialize Reddit
-    reddit = praw.Reddit(client_id=REDDIT_CLIENT_ID,
-                        client_secret=REDDIT_CLIENT_SECRET,
-                        user_agent=REDDIT_USER_AGENT)
+    reddit = praw.Reddit(client_id=tokens['REDDIT_CLIENT_ID'],
+                        client_secret=tokens['REDDIT_CLIENT_SECRET'],
+                        user_agent=tokens['REDDIT_USER_AGENT'])
     getSongURIs(reddit)
     
 
