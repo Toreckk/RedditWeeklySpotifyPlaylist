@@ -121,21 +121,21 @@ def getSongURIs(r):
     i = 1
     for submission in r.subreddit('listentothis').top(time_filter='week', limit=100):
         title = re.split(r"^([^:(]+?)(\s*[\[\(])", submission.title)
-        #print(title[1])
+
         try: 
             songID = searchSong(title[1])
-            print("{}. {} ID: {}".format(i, title[1], songID))
+            #print("{}. {} ID: {}".format(i, title[1], songID))
             SongIDs.append(songID)
             i+=1
         except IndexError:
             pass
         except:
-            print("No song found with title {}".format(title[1]))
+            #print("No song found with title: {}".format(title[1]))
+            pass
         if len(SongIDs)>=50:
-            print("----------------")
-            print("50 songs reached")
-            print("----------------")
-            break
+            print("Succesfully obtained 50 songs...")
+            return(SongIDs)
+            
         
 
 
@@ -162,7 +162,7 @@ def searchSong(songTitle):
     
     if len(resp['tracks']['items'])>0:
         #print("Track ID: "+ resp['tracks']['items'][0]['id'])
-        return resp['tracks']['items'][0]['id']
+        return resp['tracks']['items'][0]['uri']
     else:
         #print("Song not found")
         raise Exception('No song found with that title')
@@ -170,19 +170,34 @@ def searchSong(songTitle):
     
     
     
+def replacePlaylistTracks(IDList):
+    headers = {
+        "Authorization": "Bearer {}".format(tokens['SPOTIFY_ACCESS_TOKEN']),
+        "Content-Type": "application/json"
+    }
 
+    payload = {
+        "uris": IDList
+    }
+    print(payload)
+    url = "https://api.spotify.com/v1/playlists/{}/tracks".format(tokens['SPOTIFY_PLAYLIST_ID'])
+    post_request = requests.put(url, json=payload, headers=headers, allow_redirects=False, timeout=None)
+    print(post_request.text)
 
 
 
 def main():
-    #Initialize Spotify
+    # Refresh or create new Spotify Authentication tokens
     usr_auth()
 
     #Initialize Reddit
     reddit = praw.Reddit(client_id=tokens['REDDIT_CLIENT_ID'],
                         client_secret=tokens['REDDIT_CLIENT_SECRET'],
                         user_agent=tokens['REDDIT_USER_AGENT'])
-    getSongURIs(reddit)
+    #Returns a list of 50 songs ID
+    songIDList = getSongURIs(reddit)
+    # Replaces old tracks in playlist with new ones
+    replacePlaylistTracks(songIDList)
     
 
 if __name__ == "__main__":
