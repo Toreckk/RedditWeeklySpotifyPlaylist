@@ -34,6 +34,7 @@ def getSpotifyAuthHeader():
 
 # if the config.json doesn't have it
 def req_auth_app():
+    print('Obtaining new access tokens...')
     auth_params = {
         "client_id" : tokens['SPOTIFY_CLIENT_ID'],
         "response_type": "code",
@@ -42,8 +43,7 @@ def req_auth_app():
         "scope":SCOPE, #OPTIONAL
         "show_dialog":SHOW_DIALOG #OPTIONAL
     }
-    # example GET request 
-    # GET https://accounts.spotify.com/authorize?client_id=5fe01282e44241328a84e7c5cc169165&response_type=code&redirect_uri=https%3A%2F%2Fexample.com%2Fcallback&scope=user-read-private%20user-read-email&state=34fFs29kd09
+   
     args = '&'.join('{}={}'.format(param, urllib.parse.quote(auth_params[param])) for param in auth_params)
     auth_url = "{}/?{}".format(URL_AUTH,args)
     print('Auth URL: {}'.format(auth_url))
@@ -69,12 +69,14 @@ def usr_auth():
             "redirect_uri": REDIRECT_URI
         }
 
-        
-        
         post_request = requests.post(URL_TOKEN, data=payload, headers=getSpotifyAuthHeader(), allow_redirects=False, timeout=None)
 
+        if post_request.status_code == 200:
+            print ('Tokens obtained succesfully with code: {}'.format(post_request.status_code))
+        else:
+            post_request.raise_for_status()
+            
         resp = json.loads(post_request.text)
-        print(resp)
         access_token = resp['access_token']
         refresh_token = resp['refresh_token']
 
@@ -88,14 +90,12 @@ def usr_auth():
           
 def refresh_credentials():
     print("Refreshing credentials...")
-    print("REFRESH TOKEN: "+ tokens['SPOTIFY_REFRESH_TOKEN'])
     payload = {
             "grant_type": "refresh_token",
             "refresh_token": tokens['SPOTIFY_REFRESH_TOKEN']
         }
 
     post_request = requests.post(URL_TOKEN, data = payload, headers = getSpotifyAuthHeader(), allow_redirects=False, timeout=None)
-    print(post_request.text)
     
     if post_request.status_code == 200:
         print("Credentials Refreshed correctly!")
@@ -105,7 +105,7 @@ def refresh_credentials():
         with open('config.json', 'w') as f:
             json.dump(tokens, f, indent=4)
     else:
-        print("Failed to refresh credentials with error code {}".format(post_request.status_code))
+        post_request.raise_for_status()
 
 '''
 1) Gets 50 song titles from reddit
@@ -113,27 +113,26 @@ def refresh_credentials():
 3) Returns list of songIDs
 '''
 def getSongURIs(r):
+    print('Obtaining 50 songs from r/{}, this may take some seconds...'.format(tokens['REDDIT_SUBREDDIT']))
     SongIDs = []
     # Title formatting for most songs:
     #   Artist -- Title [Genre](Year)
     #   Artist - Title [Genre](Year)
     # We'll remove everyting from [
     i = 1
-    for submission in r.subreddit('listentothis').top(time_filter='week', limit=100):
+    for submission in r.subreddit(tokens['REDDIT_SUBREDDIT']).top(time_filter='week', limit=100):
         title = re.split(r"^([^:(]+?)(\s*[\[\(])", submission.title)
 
         try: 
             songID = searchSong(title[1])
-            #print("{}. {} ID: {}".format(i, title[1], songID))
             SongIDs.append(songID)
             i+=1
         except IndexError:
             pass
         except:
-            #print("No song found with title: {}".format(title[1]))
             pass
         if len(SongIDs)>=50:
-            print("Succesfully obtained 50 songs...")
+            print("Succesfully obtained 50 songs")
             return(SongIDs)
             
         
@@ -158,13 +157,10 @@ def searchSong(songTitle):
     }
     song = requests.get(search_url, headers = headers, allow_redirects=False, timeout=None)
     resp = json.loads(song.text)
-    #print(resp)
     
     if len(resp['tracks']['items'])>0:
-        #print("Track ID: "+ resp['tracks']['items'][0]['id'])
         return resp['tracks']['items'][0]['uri']
     else:
-        #print("Song not found")
         raise Exception('No song found with that title')
     
     
@@ -175,14 +171,18 @@ def replacePlaylistTracks(IDList):
         "Authorization": "Bearer {}".format(tokens['SPOTIFY_ACCESS_TOKEN']),
         "Content-Type": "application/json"
     }
-
+    print("Updating playlist...")
     payload = {
         "uris": IDList
     }
-    print(payload)
+    #print(payload)
     url = "https://api.spotify.com/v1/playlists/{}/tracks".format(tokens['SPOTIFY_PLAYLIST_ID'])
     post_request = requests.put(url, json=payload, headers=headers, allow_redirects=False, timeout=None)
-    print(post_request.text)
+    if (post_request.status_code >= 200 and post_request.status_code <300):
+        print('Playlist updated successfully!')
+    else:
+        post_request.raise_for_status()
+    
 
 
 
@@ -190,7 +190,7 @@ def main():
     # Refresh or create new Spotify Authentication tokens
     usr_auth()
 
-    #Initialize Reddit
+    #Initialize read-only Reddit instance.
     reddit = praw.Reddit(client_id=tokens['REDDIT_CLIENT_ID'],
                         client_secret=tokens['REDDIT_CLIENT_SECRET'],
                         user_agent=tokens['REDDIT_USER_AGENT'])
