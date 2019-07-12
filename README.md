@@ -22,13 +22,13 @@ To run this project locally:
 
 1. Clone this repo:
 
-				# Clone this repository
+	# Clone this repository
                 
-				$ git clone https://github.com/Toreckk/RedditWeeklySpotifyPlaylist
+	$ git clone https://github.com/Toreckk/RedditWeeklySpotifyPlaylist
         
 2. Install the requests and PRAW packages
 
-				$ pip install requests
+		$ pip install requests
 
                 $ pip install praw
                 
@@ -50,13 +50,13 @@ To run this project locally:
 
 1. Clone this repo:
 
-				# Clone this repository
+		# Clone this repository
                 
-				$ git clone https://github.com/Toreckk/RedditWeeklySpotifyPlaylist
+		$ git clone https://github.com/Toreckk/RedditWeeklySpotifyPlaylist
                 
 2. Install the requests and PRAW packages on the same folder
 
-				$ pip install requests -t .
+		$ pip install requests -t .
 
                 $ pip install praw -t .
                 
