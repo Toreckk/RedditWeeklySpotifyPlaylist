@@ -29,6 +29,7 @@ To run this project locally:
 2. Install the requests and PRAW packages
 
 				$ pip install requests
+
                 $ pip install praw
                 
 3. Fill in the exampleconfig.json and edit the name to config.json
@@ -55,6 +56,7 @@ To run this project locally:
 2. Install the requests and PRAW packages on the same folder
 
 				$ pip install requests -t .
+
                 $ pip install praw -t .
                 
                 
@@ -84,6 +86,7 @@ To run this project locally:
      2c. Paste the link and hit enter, this will get the tokens for you
      
 NOTE: You will only only have to do step 2 ONCE!
+
 
 ![](https://res.cloudinary.com/toreckk/image/upload/v1562946265/WithTokens.png)
 
