@@ -38,7 +38,7 @@ To run this project locally:
      
      3c. Change your client's User-Agent string to something unique and descriptive, including the target platform, a unique application identifier, a version string, and your username as contact information, in the following format:
      
-			<platform>:<app ID>:<version string> (by /u/<reddit username>)
+		<platform>:<app ID>:<version string> (by /u/<reddit username>)
             
      3d. If you don't have the access tokens and refresh token refer to the [usage](##usage) section.
      
@@ -110,9 +110,3 @@ How to get in contact
 
 ## License
 This project is licensed under the MIT License - see the LICENSE.md file for details
-
-
-
-         
-
-
