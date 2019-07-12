@@ -37,6 +37,7 @@ To run this project locally:
 	 3a. For the Spotify client ID and Secret, visit the [spotify developers web page](https://developer.spotify.com/) create an app, and fill in the required data. 
      
      3b. For the Reddit client ID and Secret,Visit the [following reddit page](https://www.reddit.com/prefs/apps/), create an app and fill in the required data.
+     
      3c. Change your client's User-Agent string to something unique and descriptive, including the target platform, a unique application identifier, a version string, and your username as contact information, in the following format:
      
 			<platform>:<app ID>:<version string> (by /u/<reddit username>)
