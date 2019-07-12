@@ -1,0 +1,11 @@
+{
+    "SPOTIFY_CLIENT_ID": "",
+    "SPOTIFY_CLIENT_SECRET": "",
+    "SPOTIFY_ACCESS_TOKEN": "",
+    "SPOTIFY_REFRESH_TOKEN": "",
+    "SPOTIFY_PLAYLIST_ID": "",
+    "REDDIT_CLIENT_ID": "",
+    "REDDIT_CLIENT_SECRET": "",
+    "REDDIT_USER_AGENT": "<platform>:<app ID>:<version string> (by /u/<reddit username>)",
+    "REDDIT_SUBREDDIT": "listentothis"
+}
